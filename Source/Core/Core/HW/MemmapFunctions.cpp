@@ -147,7 +147,11 @@ inline void WriteToHardware(u32 em_address, const T data, u32 effective_address,
 {
 	// First, let's check for FIFO writes, since they are probably the most common
 	// reason we end up in this function:
-	if (em_address == 0xCC008000)
+	//
+	// In theory comparing to 0xCC008000 without masking should be enough, but
+	// for some reason we seem to be accessing other values in the GPFifo range
+	// on 32 bit Windows. TODO: debug why this happens.
+	if ((em_address & 0xFFFFF000) == 0xCC008000)
 	{
 		switch (sizeof(T))
 		{
