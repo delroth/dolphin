@@ -171,7 +171,7 @@ private:
 	u16 indexReg;
 };
 
-inline OpArg M(void *ptr)       {return OpArg((u64)ptr, (int)SCALE_RIP);}
+inline OpArg M(const void *ptr) {return OpArg((u64)ptr, (int)SCALE_RIP);}
 inline OpArg R(X64Reg value)    {return OpArg(0, SCALE_NONE, value);}
 inline OpArg MatR(X64Reg value) {return OpArg(0, SCALE_ATREG, value);}
 inline OpArg MDisp(X64Reg value, int offset) {
