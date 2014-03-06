@@ -195,9 +195,9 @@ inline OpArg Imm16(u16 imm) {return OpArg(imm, SCALE_IMM16);} //rarely used
 inline OpArg Imm32(u32 imm) {return OpArg(imm, SCALE_IMM32);}
 inline OpArg Imm64(u64 imm) {return OpArg(imm, SCALE_IMM64);}
 #ifdef _ARCH_64
-inline OpArg ImmPtr(void* imm) {return Imm64((u64)imm);}
+inline OpArg ImmPtr(const void* imm) {return Imm64((u64)imm);}
 #else
-inline OpArg ImmPtr(void* imm) {return Imm32((u32)imm);}
+inline OpArg ImmPtr(const void* imm) {return Imm32((u32)imm);}
 #endif
 inline u32 PtrOffset(void* ptr, void* base) {
 #ifdef _ARCH_64 
@@ -756,8 +756,12 @@ public:
 	template <typename T, typename... Args>
 	void ABI_CallLambdaC(const std::function<T(Args...)>* f, u32 p1)
 	{
-		ABI_CallFunctionPC((void*)&XEmitter::CallLambdaTrampoline<T, Args...>,
-		                   const_cast<void*>((const void*)f), p1);
+		// (shuffle2) This assignment-through-function-pointer is required to
+		// compile on msvc. I'm not sure why.
+		void (*trampoline)() =
+			(void(*)())&XEmitter::CallLambdaTrampoline<T, Args...>;
+		ABI_CallFunctionPC((void *)trampoline,
+						   const_cast<void*>((const void*)f), p1);
 	}
 };  // class XEmitter
 
