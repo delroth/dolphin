@@ -23,15 +23,24 @@ TEST(UniqueID, UniqueEnough)
 	}
 }
 
+TEST(IsMMIOAddress, SpecialAddresses)
+{
+	// WG Pipe address, should not be handled by MMIO.
+	EXPECT_FALSE(MMIO::IsMMIOAddress(0xCC008000));
+
+	// Memory zone used by games using the "MMU Speedhack".
+	EXPECT_FALSE(MMIO::IsMMIOAddress(0xE0000000));
+}
+
 class MappingTest : public testing::Test
 {
 protected:
-	virtual void SetUp()
+	virtual void SetUp() override
 	{
 		m_mapping = new MMIO::Mapping();
 	}
 
-	virtual void TearDown()
+	virtual void TearDown() override
 	{
 		delete m_mapping;
 	}
@@ -64,7 +73,7 @@ TEST_F(MappingTest, ReadWriteDirect)
 	m_mapping->Register(0xCC001234, MMIO::DirectRead<u16>(&target_16), MMIO::DirectWrite<u16>(&target_16));
 	m_mapping->Register(0xCC001234, MMIO::DirectRead<u32>(&target_32), MMIO::DirectWrite<u32>(&target_32));
 
-	for (int i = 0; i < 100; ++i)
+	for (u32 i = 0; i < 100; ++i)
 	{
 		u8 val8;   m_mapping->Read(0xCC001234, &val8);  EXPECT_EQ(i, val8);
 		u16 val16; m_mapping->Read(0xCC001234, &val16); EXPECT_EQ(i, val16);
@@ -74,4 +83,28 @@ TEST_F(MappingTest, ReadWriteDirect)
 		val16 += 1; m_mapping->Write(0xCC001234, val16);
 		val32 += 1; m_mapping->Write(0xCC001234, val32);
 	}
+}
+
+TEST_F(MappingTest, ReadWriteComplex)
+{
+	bool read_called = false, write_called = false;
+
+	m_mapping->Register(0xCC001234,
+		MMIO::ComplexRead<u8>([&read_called](u32 addr) {
+			EXPECT_EQ(0xCC001234, addr);
+			read_called = true;
+			return 0x12;
+		}),
+		MMIO::ComplexWrite<u8>([&write_called](u32 addr, u8 val) {
+			EXPECT_EQ(0xCC001234, addr);
+			EXPECT_EQ(0x34, val);
+			write_called = true;
+		})
+	);
+
+	u8 val; m_mapping->Read(0xCC001234, &val); EXPECT_EQ(0x12, val);
+	m_mapping->Write(0xCC001234, (u8)0x34);
+
+	EXPECT_TRUE(read_called);
+	EXPECT_TRUE(write_called);
 }
