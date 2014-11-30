@@ -3,6 +3,7 @@
 // Refer to the license.txt file included.
 
 #include <algorithm>
+#include <bitset>
 #include <queue>
 #include <string>
 
@@ -527,6 +528,87 @@ void PPCAnalyzer::SetInstructionStats(CodeBlock *block, CodeOp *code, GekkoOPInf
 	case OPTYPE_SYSTEMFP:
 		break;
 	}
+
+	code->branchUsesCtr = false;
+
+	// For branch with immediate addresses (bx/bcx), compute the destination.
+	if (code->inst.OPCD == 18)  // bx
+	{
+		if (code->inst.AA)  // absolute
+			code->branchTo = SignExt26(code->inst.LI << 2);
+		else
+			code->branchTo = code->address + SignExt26(code->inst.LI << 2);
+	}
+	else if (code->inst.OPCD == 16)  // bcx
+	{
+		if (code->inst.AA)  // absolute
+			code->branchTo = SignExt16(code->inst.BD << 2);
+		else
+			code->branchTo = code->address + SignExt16(code->inst.BD << 2);
+
+		if (!(code->inst.BO & 4))
+			code->branchUsesCtr = true;
+	}
+}
+
+bool PPCAnalyzer::IsBusyWaitLoop(CodeBlock* block, CodeOp* code)
+{
+	// Very basic algorithm to detect busy wait loops:
+	//   * It loops to itself and does not contain any other branches.
+	//   * It does not write to memory.
+	//   * It only reads from registers it wrote to earlier in the loop, or it
+	//     does not write to these registers.
+	//
+	// Would benefit a lot from basic inlining support - a lot of the most
+	// used busy loops are DSP register interactions, which are bl/cmp/bne
+	// (with the bl target a pure function that follows the above rules). We
+	// don't detect these at the moment.
+
+	std::bitset<32> write_disallowed_regs;
+	std::bitset<32> written_regs;
+
+	for (u32 i = 0; i < block->m_num_instructions; ++i)
+	{
+		if (code[i].opinfo->type == OPTYPE_BRANCH)
+		{
+			if (code[i].branchTo != block->m_address ||
+			    i != (block->m_num_instructions - 1))
+				return false;
+
+			if (code[i].branchUsesCtr)
+				return false;
+		}
+		else if (code[i].opinfo->type != OPTYPE_INTEGER &&
+		         code[i].opinfo->type != OPTYPE_LOAD)
+		{
+			// In the future, some subsets of other instruction types might get
+			// supported. Right now, only try loops that have this very
+			// restricted instruction set.
+			return false;
+		}
+		else
+		{
+			for (int reg : code[i].regsIn)
+			{
+				if (reg == -1)
+					continue;
+				if (written_regs[reg])
+					continue;
+				write_disallowed_regs[reg] = true;
+			}
+
+			for (int reg : code[i].regsOut)
+			{
+				if (reg == -1)
+					continue;
+				if (write_disallowed_regs[reg])
+					return false;
+				written_regs[reg] = true;
+			}
+		}
+	}
+
+	return true;
 }
 
 u32 PPCAnalyzer::Analyze(u32 address, CodeBlock *block, CodeBuffer *buffer, u32 blockSize)
@@ -548,6 +630,7 @@ u32 PPCAnalyzer::Analyze(u32 address, CodeBlock *block, CodeBuffer *buffer, u32 
 	block->m_broken = false;
 	block->m_memory_exception = false;
 	block->m_num_instructions = 0;
+	block->m_wait_loop = false;
 
 	if (address == 0)
 	{
@@ -569,9 +652,9 @@ u32 PPCAnalyzer::Analyze(u32 address, CodeBlock *block, CodeBuffer *buffer, u32 
 	CodeOp *code = buffer->codebuffer;
 
 	bool found_exit = false;
+	bool maybe_wait_loop = true;
 	u32 return_address = 0;
 	u32 numFollows = 0;
-	u32 num_inst = 0;
 
 	for (u32 i = 0; i < blockSize; ++i)
 	{
@@ -579,7 +662,7 @@ u32 PPCAnalyzer::Analyze(u32 address, CodeBlock *block, CodeBuffer *buffer, u32 
 
 		if (inst.hex != 0)
 		{
-			num_inst++;
+			block->m_num_instructions++;
 			memset(&code[i], 0, sizeof(CodeOp));
 			GekkoOPInfo *opinfo = GetOpInfo(inst);
 
@@ -593,6 +676,21 @@ u32 PPCAnalyzer::Analyze(u32 address, CodeBlock *block, CodeBuffer *buffer, u32 
 
 			SetInstructionStats(block, &code[i], opinfo, i);
 
+			address += 4;
+
+			if (maybe_wait_loop && code[i].branchTo == block->m_address)
+			{
+				if (IsBusyWaitLoop(block, code))
+				{
+					block->m_wait_loop = true;
+					break;
+				}
+				else
+				{
+					maybe_wait_loop = false;
+				}
+			}
+
 			bool follow = false;
 			u32 destination = 0;
 
@@ -603,11 +701,7 @@ u32 PPCAnalyzer::Analyze(u32 address, CodeBlock *block, CodeBuffer *buffer, u32 
 			{
 				if (inst.OPCD == 18 && blockSize > 1)
 				{
-					//Is bx - should we inline? yes!
-					if (inst.AA)
-						destination = SignExt26(inst.LI << 2);
-					else
-						destination = address + SignExt26(inst.LI << 2);
+					destination = code->branchTo;
 					if (destination != block->m_address)
 						follow = true;
 				}
@@ -621,7 +715,7 @@ u32 PPCAnalyzer::Analyze(u32 address, CodeBlock *block, CodeBuffer *buffer, u32 
 					return_address = 0;
 
 					if (inst.LK)
-						return_address = address + 4;
+						return_address = code->address + 4;
 				}
 				else if (inst.OPCD == 31 && inst.SUBOP10 == 467)
 				{
@@ -676,7 +770,6 @@ u32 PPCAnalyzer::Analyze(u32 address, CodeBlock *block, CodeBuffer *buffer, u32 
 
 			if (!follow)
 			{
-				address += 4;
 				if (!conditional_continue && opinfo->flags & FL_ENDBLOCK) //right now we stop early
 				{
 					found_exit = true;
@@ -704,12 +797,16 @@ u32 PPCAnalyzer::Analyze(u32 address, CodeBlock *block, CodeBuffer *buffer, u32 
 		}
 	}
 
-	block->m_num_instructions = num_inst;
+	if (block->m_wait_loop)
+	{
+		printf("@ %08x (%d instrs) might be a wait loop\n",
+				block->m_address, block->m_num_instructions);
+	}
 
 	if (block->m_num_instructions > 1)
 		ReorderInstructions(block->m_num_instructions, code);
 
-	if ((!found_exit && num_inst > 0) || blockSize == 1)
+	if ((!found_exit && block->m_num_instructions > 0) || blockSize == 1)
 	{
 		// We couldn't find an exit
 		block->m_broken = true;

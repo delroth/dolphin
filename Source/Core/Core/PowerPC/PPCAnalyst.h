@@ -24,8 +24,9 @@ struct CodeOp //16B
 	UGeckoInstruction inst;
 	GekkoOPInfo * opinfo;
 	u32 address;
-	u32 branchTo; //if 0, not a branch
+	u32 branchTo; // if -1, not a branch
 	int branchToIndex; //index of target block
+	bool branchUsesCtr;
 	s8 regsOut[2];
 	s8 regsIn[3];
 	s8 fregOut;
@@ -137,6 +138,9 @@ struct CodeBlock
 
 	// Did we have a memory_exception?
 	bool m_memory_exception;
+
+	// Are we a wait loop block that can be skipped instead of looping?
+	bool m_wait_loop;
 };
 
 class PPCAnalyzer
@@ -145,6 +149,8 @@ private:
 
 	void ReorderInstructions(u32 instructions, CodeOp *code);
 	void SetInstructionStats(CodeBlock *block, CodeOp *code, GekkoOPInfo *opinfo, u32 index);
+
+	bool IsBusyWaitLoop(CodeBlock* block, CodeOp* code);
 
 	// Options
 	u32 m_options;

@@ -21,8 +21,8 @@ static GekkoOPTemplate primarytable[] =
 	{59, Interpreter::RunTable59,   {"RunTable59", OPTYPE_SUBTABLE | (59<<24), 0, 0, 0, 0, 0}},
 	{63, Interpreter::RunTable63,   {"RunTable63", OPTYPE_SUBTABLE | (63<<24), 0, 0, 0, 0, 0}},
 
-	{16, Interpreter::bcx,          {"bcx", OPTYPE_SYSTEM, FL_ENDBLOCK, 1, 0, 0, 0}},
-	{18, Interpreter::bx,           {"bx",  OPTYPE_SYSTEM, FL_ENDBLOCK, 1, 0, 0, 0}},
+	{16, Interpreter::bcx,          {"bcx", OPTYPE_BRANCH, FL_ENDBLOCK, 1, 0, 0, 0}},
+	{18, Interpreter::bx,           {"bx",  OPTYPE_BRANCH, FL_ENDBLOCK, 1, 0, 0, 0}},
 
 	{1,  Interpreter::HLEFunction,  {"HLEFunction", OPTYPE_SYSTEM, FL_ENDBLOCK, 1, 0, 0, 0}},
 	{2,  Interpreter::CompiledBlock,{"DynaBlock",   OPTYPE_SYSTEM, 1, 0, 0, 0, 0}},
