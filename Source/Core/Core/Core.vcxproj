@@ -47,6 +47,7 @@
     <ClCompile Include="ConfigManager.cpp" />
     <ClCompile Include="Core.cpp" />
     <ClCompile Include="CoreTiming.cpp" />
+    <ClCompile Include="CrashDump.cpp" />
     <ClCompile Include="Debugger\Debugger_SymbolMap.cpp" />
     <ClCompile Include="Debugger\Dump.cpp" />
     <ClCompile Include="Debugger\PPCDebugInterface.cpp" />
@@ -262,6 +263,7 @@
     <ClInclude Include="ConfigManager.h" />
     <ClInclude Include="Core.h" />
     <ClInclude Include="CoreTiming.h" />
+    <ClInclude Include="CrashDump.h" />
     <ClInclude Include="Debugger\Debugger_SymbolMap.h" />
     <ClInclude Include="Debugger\Dump.h" />
     <ClInclude Include="Debugger\GCELF.h" />

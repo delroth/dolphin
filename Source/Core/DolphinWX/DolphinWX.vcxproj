@@ -62,6 +62,7 @@
     <ClCompile Include="Config\InterfaceConfigPane.cpp" />
     <ClCompile Include="Config\PathConfigPane.cpp" />
     <ClCompile Include="Config\WiiConfigPane.cpp" />
+    <ClCompile Include="CrashReportDialog.cpp" />
     <ClCompile Include="Debugger\BreakpointDlg.cpp" />
     <ClCompile Include="Debugger\BreakpointView.cpp" />
     <ClCompile Include="Debugger\BreakpointWindow.cpp" />
@@ -128,6 +129,7 @@
     <ClInclude Include="Cheats\CreateCodeDialog.h" />
     <ClInclude Include="Cheats\GeckoCodeDiag.h" />
     <ClInclude Include="Config\ConfigMain.h" />
+    <ClInclude Include="CrashReportDialog.h" />
     <ClInclude Include="Debugger\BreakpointDlg.h" />
     <ClInclude Include="Debugger\BreakpointView.h" />
     <ClInclude Include="Debugger\BreakpointWindow.h" />

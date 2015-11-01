@@ -124,6 +124,9 @@
     <ClCompile Include="ARCodeAddEdit.cpp">
       <Filter>GUI</Filter>
     </ClCompile>
+    <ClCompile Include="CrashReportDialog.cpp">
+      <Filter>GUI</Filter>
+    </ClCompile>
     <ClCompile Include="FifoPlayerDlg.cpp">
       <Filter>GUI</Filter>
     </ClCompile>
@@ -286,6 +289,9 @@
       <Filter>GUI</Filter>
     </ClInclude>
     <ClInclude Include="ARCodeAddEdit.h">
+      <Filter>GUI</Filter>
+    </ClInclude>
+    <ClInclude Include="CrashReportDialog.h">
       <Filter>GUI</Filter>
     </ClInclude>
     <ClInclude Include="FifoPlayerDlg.h">
