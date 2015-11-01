@@ -27,7 +27,7 @@ void CrashDump::DeleteFromDisk()
 {
 }
 
-std::string CrashDump::SerializeToString()
+std::string CrashDump::SerializeToString() const
 {
 	return "Hello, I'm a fake crash dump.";
 }
