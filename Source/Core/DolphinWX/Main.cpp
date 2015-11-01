@@ -30,10 +30,12 @@
 
 #include "Core/ConfigManager.h"
 #include "Core/Core.h"
+#include "Core/CrashDump.h"
 #include "Core/Host.h"
 #include "Core/Movie.h"
 #include "Core/HW/Wiimote.h"
 
+#include "DolphinWX/CrashReportDialog.h"
 #include "DolphinWX/Frame.h"
 #include "DolphinWX/Globals.h"
 #include "DolphinWX/Main.h"
@@ -260,7 +262,16 @@ void DolphinApp::MacOpenFile(const wxString& fileName)
 void DolphinApp::AfterInit()
 {
 	if (!m_batch_mode)
+	{
 		main_frame->UpdateGameList();
+
+		// If we have a crash dump from a previous run on disk, try to report it.
+		std::unique_ptr<CrashDump> dump = CrashDump::TryLoadFromDisk();
+		if (dump)
+		{
+			ReportCrashDump(std::move(dump));
+		}
+	}
 
 	if (m_confirm_stop)
 	{
@@ -298,6 +309,20 @@ void DolphinApp::AfterInit()
 			main_frame->BootGame("");
 		}
 	}
+}
+
+void DolphinApp::ReportCrashDump(std::unique_ptr<CrashDump> dump)
+{
+	if (AskYesNoT("Dolphin detected that the emulator crashed during its last "
+	              "run. Do you want to report this crash to the Dolphin "
+	              "development team? This helps improve the stability of the "
+	              "emulator. Crash data is anonymized."))
+	{
+		CrashReportDialog report_frame(main_frame, std::move(dump));
+		report_frame.ShowModal();
+	}
+
+	CrashDump::DeleteFromDisk();
 }
 
 void DolphinApp::InitLanguageSupport()

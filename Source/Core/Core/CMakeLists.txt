@@ -4,6 +4,7 @@ set(SRCS	ActionReplay.cpp
 			ConfigManager.cpp
 			Core.cpp
 			CoreTiming.cpp
+			CrashDump.cpp
 			DSPEmulator.cpp
 			ec_wii.cpp
 			GeckoCodeConfig.cpp

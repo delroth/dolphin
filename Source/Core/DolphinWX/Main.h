@@ -8,6 +8,7 @@
 #include <wx/app.h>
 
 class CFrame;
+class CrashDump;
 class wxLocale;
 
 extern CFrame* main_frame;
@@ -33,6 +34,7 @@ private:
 	void OnEndSession(wxCloseEvent& event);
 	void InitLanguageSupport();
 	void AfterInit();
+	void ReportCrashDump(std::unique_ptr<CrashDump> dump);
 
 	bool m_batch_mode = false;
 	bool m_confirm_stop = false;

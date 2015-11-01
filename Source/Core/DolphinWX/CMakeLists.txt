@@ -1,7 +1,6 @@
 set(GUI_SRCS
 	ARCodeAddEdit.cpp
 	AboutDolphin.cpp
-	ControllerConfigDiag.cpp
 	Cheats/CheatSearchTab.cpp
 	Cheats/CheatsWindow.cpp
 	Cheats/CreateCodeDialog.cpp
@@ -14,6 +13,8 @@ set(GUI_SRCS
 	Config/InterfaceConfigPane.cpp
 	Config/PathConfigPane.cpp
 	Config/WiiConfigPane.cpp
+	ControllerConfigDiag.cpp
+	CrashReportDialog.cpp
 	Debugger/BreakpointDlg.cpp
 	Debugger/BreakpointView.cpp
 	Debugger/BreakpointWindow.cpp
@@ -32,10 +33,6 @@ set(GUI_SRCS
 	Debugger/RegisterWindow.cpp
 	Debugger/WatchView.cpp
 	Debugger/WatchWindow.cpp
-	NetPlay/ChangeGameDialog.cpp
-	NetPlay/NetPlaySetupFrame.cpp
-	NetPlay/NetWindow.cpp
-	NetPlay/PadMapDialog.cpp
 	FifoPlayerDlg.cpp
 	Frame.cpp
 	FrameAui.cpp
@@ -47,6 +44,10 @@ set(GUI_SRCS
 	InputConfigDiagBitmaps.cpp
 	LogConfigWindow.cpp
 	LogWindow.cpp
+	NetPlay/ChangeGameDialog.cpp
+	NetPlay/NetPlaySetupFrame.cpp
+	NetPlay/NetWindow.cpp
+	NetPlay/PadMapDialog.cpp
 	Main.cpp
 	MemcardManager.cpp
 	PatchAddEdit.cpp
