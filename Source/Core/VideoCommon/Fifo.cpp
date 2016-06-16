@@ -199,6 +199,7 @@ void RunGpuLoop()
 
 				u32 bytes_to_read = ProcessableFifoBytes(readPtr);
 				u32 bytes_read = ReadDataFromFifo(uData, bytes_to_read);
+				printf("%d %d\n", bytes_to_read, bytes_read);
 
 				cyclesExecuted = OpcodeDecoder_Run(g_bSkipCurrentFrame);
 
@@ -211,8 +212,7 @@ void RunGpuLoop()
 
 				Common::AtomicStore(fifo.CPReadPointer, readPtr);
 				Common::AtomicAdd(fifo.CPReadWriteDistance, -(s32)bytes_read);
-				if ((GetVideoBufferEndPtr() - g_pVideoData) == 0)
-					Common::AtomicStore(fifo.SafeCPReadPointer, fifo.CPReadPointer);
+				Common::AtomicStore(fifo.SafeCPReadPointer, readPtr);
 			}
 
 			CommandProcessor::SetCpStatus();

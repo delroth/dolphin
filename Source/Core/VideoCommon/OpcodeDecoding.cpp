@@ -470,11 +470,19 @@ u32 OpcodeDecoder_Run(bool skipped_frame)
 {
 	u32 totalCycles = 0;
 	u32 cycles = FifoCommandRunnable();
-	while (cycles > 0)
+	while (!CommandProcessor::interruptWaiting && cycles > 0)
 	{
 		skipped_frame ? DecodeSemiNop() : Decode();
 		totalCycles += cycles;
 		cycles = FifoCommandRunnable();
+
+		CommandProcessor::SetCpStatus();
+
+		// This call is pretty important in DualCore mode and must be called in the FIFO Loop.
+		// If we don't, s_swapRequested or s_efbAccessRequested won't be set to false
+		// leading the CPU thread to wait in Video_BeginField or Video_AccessEFB thus slowing things down.
+		VideoFifo_CheckAsyncRequest();
+		CommandProcessor::isPossibleWaitingSetDrawDone = false;
 	}
 	return totalCycles;
 }
