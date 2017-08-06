@@ -32,6 +32,7 @@ public:
 private:
   static constexpr u32 VERSION = 0x50001;
 
+  u32 m_hanging_request = 0;
   bool m_devicechange_replied = false;
 };
 
