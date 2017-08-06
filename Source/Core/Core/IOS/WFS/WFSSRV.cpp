@@ -155,6 +155,28 @@ IPCCommandResult WFSSRV::IOCtl(const IOCtlRequest& request)
     break;
   }
 
+  case IOCTL_WFS_GET_SIZE:
+  {
+    u16 fd = Memory::Read_U16(request.buffer_in);
+    FileDescriptor* fd_obj = FindFileDescriptor(fd);
+    if (fd_obj == nullptr)
+    {
+      ERROR_LOG(IOS, "IOCTL_WFS_GET_SIZE: invalid file descriptor %d", fd);
+      return_error_code = WFS_EBADFD;
+      break;
+    }
+
+    u64 size = fd_obj->file.GetSize();
+    u32 truncated_size = static_cast<u32>(size);
+    INFO_LOG(IOS, "IOCTL_WFS_GET_SIZE(%d) -> %d", fd, truncated_size);
+    if (size != truncated_size)
+    {
+      ERROR_LOG(IOS, "IOCTL_WFS_GET_SIZE: file %d too large (%llu)", fd, size);
+    }
+    Memory::Write_U32(truncated_size, request.buffer_out);
+    break;
+  }
+
   case IOCTL_WFS_CLOSE:
   {
     u16 fd = Memory::Read_U16(request.buffer_in + 0x4);
