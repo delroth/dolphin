@@ -128,7 +128,7 @@ protected:
 
   void AddDevice(std::unique_ptr<Device::Device> device);
   void AddCoreDevices();
-  void AddStaticDevices();
+  void AddStaticDevices(u64 ios_title_id);
   std::shared_ptr<Device::Device> GetDeviceByName(const std::string& device_name);
   s32 GetFreeDeviceID();
   s32 OpenDevice(OpenRequest& request);
