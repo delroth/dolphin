@@ -72,6 +72,7 @@ private:
 
   enum
   {
+    WFS_ENOENT = -10018,  // No such file or directory.
     WFS_EBADFD = -10026,  // Invalid file descriptor.
     WFS_EEMPTY = -10028,  // Directory is empty of iteration completed.
   };
