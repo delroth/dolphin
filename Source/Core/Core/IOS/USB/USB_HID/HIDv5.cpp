@@ -38,8 +38,7 @@ IPCCommandResult USB_HIDv5::IOCtl(const IOCtlRequest& request)
     if (m_hanging_request)
     {
       IOCtlRequest hanging_request{m_hanging_request};
-      Memory::Write_U32(0xffffffff, hanging_request.buffer_out);
-      m_ios.EnqueueIPCReply(hanging_request, -1);
+      m_ios.EnqueueIPCReply(hanging_request, IPC_SUCCESS);
     }
     return GetDefaultReply(IPC_SUCCESS);
   case USB::IOCTL_USBV5_GETDEVICECHANGE:
@@ -51,7 +50,6 @@ IPCCommandResult USB_HIDv5::IOCtl(const IOCtlRequest& request)
     else
     {
       m_devicechange_replied = true;
-      Memory::Write_U32(0xffffffff, request.buffer_out);
       return GetDefaultReply(IPC_SUCCESS);
     }
   default:
