@@ -4,6 +4,7 @@
 
 #include "Core/IOS/WFS/WFSSRV.h"
 
+#include <cinttypes>
 #include <string>
 #include <vector>
 
@@ -177,7 +178,7 @@ IPCCommandResult WFSSRV::IOCtl(const IOCtlRequest& request)
     INFO_LOG(IOS, "IOCTL_WFS_GET_SIZE(%d) -> %d", fd, truncated_size);
     if (size != truncated_size)
     {
-      ERROR_LOG(IOS, "IOCTL_WFS_GET_SIZE: file %d too large (%llu)", fd, size);
+      ERROR_LOG(IOS, "IOCTL_WFS_GET_SIZE: file %d too large (" PRIu64 ")", fd, size);
     }
     Memory::Write_U32(truncated_size, request.buffer_out);
     break;
