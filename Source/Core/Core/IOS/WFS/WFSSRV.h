@@ -27,6 +27,7 @@ enum
   WFS_EBADFD = -10026,  // Invalid file descriptor.
   WFS_EEXIST = -10027,  // No such file or directory.
   WFS_ENOENT = -10028,  // No such file or directory.
+  WFS_FILE_IS_OPENED = -10032,  // Cannot perform operation on an opened file.
 };
 
 namespace Device
@@ -37,6 +38,8 @@ public:
   WFSSRV(Kernel& ios, const std::string& device_name);
 
   IPCCommandResult IOCtl(const IOCtlRequest& request) override;
+
+  s32 Rename(const std::string& source, const std::string& dest) const;
 
 private:
   // WFS device name, e.g. msc01/msc02.
@@ -66,6 +69,7 @@ private:
     IOCTL_WFS_GET_HOMEDIR = 0x12,
     IOCTL_WFS_GETCWD = 0x13,
     IOCTL_WFS_DELETE = 0x15,
+    IOCTL_WFS_RENAME = 0x16,
     IOCTL_WFS_GET_ATTRIBUTES = 0x17,
     IOCTL_WFS_CREATE_OPEN = 0x19,
     IOCTL_WFS_OPEN = 0x1A,
