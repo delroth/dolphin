@@ -24,6 +24,7 @@ std::string NativePath(const std::string& wfs_path);
 
 enum
 {
+  WFS_EINVAL = -10003,  // Invalid argument.
   WFS_EBADFD = -10026,  // Invalid file descriptor.
   WFS_EEXIST = -10027,  // File already exists.
   WFS_ENOENT = -10028,  // No such file or directory.
