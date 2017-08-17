@@ -331,9 +331,8 @@ bool Copy(const std::string& srcFilename, const std::string& destFilename)
   char buffer[BSIZE];
 
   // Open input file
-  std::ifstream input;
-  OpenFStream(input, srcFilename, std::ifstream::in | std::ifstream::binary);
-  if (!input.is_open())
+  File::IOFile input(srcFilename, "rb");
+  if (!input.IsOpen())
   {
     ERROR_LOG(COMMON, "Copy: input failed %s --> %s: %s", srcFilename.c_str(), destFilename.c_str(),
               GetLastErrorMsg().c_str());
@@ -342,7 +341,6 @@ bool Copy(const std::string& srcFilename, const std::string& destFilename)
 
   // open output file
   File::IOFile output(destFilename, "wb");
-
   if (!output.IsOpen())
   {
     ERROR_LOG(COMMON, "Copy: output failed %s --> %s: %s", srcFilename.c_str(),
@@ -351,19 +349,14 @@ bool Copy(const std::string& srcFilename, const std::string& destFilename)
   }
 
   // copy loop
-  while (!input.eof())
+  while (input)
   {
     // read input
-    input.read(buffer, BSIZE);
-    if (!input)
-    {
-      ERROR_LOG(COMMON, "Copy: failed reading from source, %s --> %s: %s", srcFilename.c_str(),
-                destFilename.c_str(), GetLastErrorMsg().c_str());
-      return false;
-    }
+    size_t read_bytes;
+    input.ReadArray(buffer, BSIZE, &read_bytes);
 
     // write output
-    if (!output.WriteBytes(buffer, BSIZE))
+    if (!output.WriteBytes(buffer, read_bytes))
     {
       ERROR_LOG(COMMON, "Copy: failed writing to output, %s --> %s: %s", srcFilename.c_str(),
                 destFilename.c_str(), GetLastErrorMsg().c_str());
@@ -559,7 +552,7 @@ bool DeleteDirRecursively(const std::string& directory)
 }
 
 // Create directory and copy contents (does not overwrite existing files)
-void CopyDir(const std::string& source_path, const std::string& dest_path)
+void CopyDir(const std::string& source_path, const std::string& dest_path, bool destructive)
 {
   if (source_path == dest_path)
     return;
@@ -600,10 +593,12 @@ void CopyDir(const std::string& source_path, const std::string& dest_path)
     {
       if (!Exists(dest))
         File::CreateFullPath(dest + DIR_SEP);
-      CopyDir(source, dest);
+      CopyDir(source, dest, destructive);
     }
-    else if (!Exists(dest))
+    else if (!Exists(dest) && !destructive)
       File::Copy(source, dest);
+    else
+      File::Rename(source, dest);
 #ifdef _WIN32
   } while (FindNextFile(hFind, &ffd) != 0);
   FindClose(hFind);
