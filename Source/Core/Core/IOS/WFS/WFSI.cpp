@@ -365,20 +365,20 @@ IPCCommandResult WFSI::IOCtl(const IOCtlRequest& request)
         File::DeleteDirRecursively(WFS::NativePath(install_directory));
       }
 
-      m_base_extract_path =
-          StringFromFormat("%s/%s/content", install_directory.c_str(), m_import_title_id_str.c_str());
+      m_base_extract_path = StringFromFormat("%s/%s/content", install_directory.c_str(),
+                                             m_import_title_id_str.c_str());
       File::CreateFullPath(WFS::NativePath(m_base_extract_path));
       File::CreateDir(WFS::NativePath(m_base_extract_path));
 
       for (auto dir : {"work", "meta", "save"})
       {
-        std::string path =
-            StringFromFormat("%s/%s/%s", install_directory.c_str(), m_import_title_id_str.c_str(), dir);
+        std::string path = StringFromFormat("%s/%s/%s", install_directory.c_str(),
+                                            m_import_title_id_str.c_str(), dir);
         File::CreateDir(WFS::NativePath(path));
       }
 
-      std::string group_path =
-          StringFromFormat("/vol/%s/title/%s", m_device_name.c_str(), m_import_group_id_str.c_str());
+      std::string group_path = StringFromFormat("/vol/%s/title/%s", m_device_name.c_str(),
+                                                m_import_group_id_str.c_str());
       File::CreateFullPath(WFS::NativePath(group_path));
       File::CreateDir(WFS::NativePath(group_path));
     }
