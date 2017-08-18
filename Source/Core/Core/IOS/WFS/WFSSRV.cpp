@@ -365,16 +365,23 @@ IPCCommandResult WFSSRV::IOCtl(const IOCtlRequest& request)
   return GetDefaultReply(return_error_code);
 }
 
-s32 WFSSRV::Rename(const std::string& source, const std::string& dest) const
+s32 WFSSRV::Rename(std::string source, std::string dest) const
 {
-  const bool opened = std::any_of(m_fds.begin(), m_fds.end(), [&](const auto& fd) {
-    return fd.in_use && fd.path == source;
-  });
+  source = NormalizePath(source);
+  dest = NormalizePath(dest);
+
+  INFO_LOG(IOS_WFS, "IOCTL_WFS_RENAME: %s to %s", source.c_str(), dest.c_str());
+
+  const bool opened = std::any_of(m_fds.begin(), m_fds.end(),
+                                  [&](const auto& fd) { return fd.in_use && fd.path == source; });
 
   if (opened)
     return WFS_FILE_IS_OPENED;
 
-  File::Rename(WFS::NativePath(source), WFS::NativePath(dest));
+  // TODO(wfs): Handle other rename failures
+  if (!File::Rename(WFS::NativePath(source), WFS::NativePath(dest)))
+    return WFS_ENOENT;
+
   return IPC_SUCCESS;
 }
 
