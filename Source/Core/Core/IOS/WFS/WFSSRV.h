@@ -24,9 +24,10 @@ std::string NativePath(const std::string& wfs_path);
 
 enum
 {
-  WFS_EBADFD = -10026,  // Invalid file descriptor.
-  WFS_EEXIST = -10027,  // File already exists.
-  WFS_ENOENT = -10028,  // No such file or directory.
+  WFS_EINVAL = -10003,          // Invalid argument.
+  WFS_EBADFD = -10026,          // Invalid file descriptor.
+  WFS_EEXIST = -10027,          // File already exists.
+  WFS_ENOENT = -10028,          // No such file or directory.
   WFS_FILE_IS_OPENED = -10032,  // Cannot perform operation on an opened file.
 };
 
@@ -39,7 +40,7 @@ public:
 
   IPCCommandResult IOCtl(const IOCtlRequest& request) override;
 
-  s32 Rename(const std::string& source, const std::string& dest) const;
+  s32 Rename(std::string source, std::string dest) const;
 
 private:
   // WFS device name, e.g. msc01/msc02.
